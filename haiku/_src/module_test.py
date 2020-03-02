@@ -209,6 +209,14 @@ class ModuleTest(parameterized.TestCase):
     params = init_fn(None)
     self.assertEqual(params, {"scalar_module": {"w": jnp.zeros([])}})
 
+  @test_utils.transform_and_run
+  def test_missing_init(self):
+    with self.assertRaisesRegex(ValueError, "Constructing an hk.Module without "
+                                            "calling the super constructor "
+                                            "is not supported.*"):
+      """"""
+      ParentModuleNoInit()
+
 
 class CapturesModule(module.Module):
 
@@ -283,6 +291,17 @@ class TransparentModule(module.Module):
   @module.transparent
   def __call__(self):
     return ScalarModule()()
+
+
+class ParentModuleNoInit(module.Module):
+
+  def __init__(self):
+    # self.module_name = "hello world"
+    self._submodules = set()
+    # self.child1 = ScalarModule(name="child_module")
+
+  def __call__(self):
+    return base.get_parameter("w", [], init=jnp.zeros)
 
 
 if __name__ == "__main__":
